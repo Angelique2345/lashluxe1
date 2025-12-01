@@ -2,6 +2,8 @@
 include 'includes/db.php';
 include 'includes/header.php';
 $success = '';
+$error = ''; // Initialize $error variable
+
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
   $name = trim($_POST['name']);
   $email = trim($_POST['email']);
@@ -10,17 +12,25 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 
   $stmt = $conn->prepare("INSERT INTO messages (name,email,subject,message) VALUES (?,?,?,?)");
   $stmt->bind_param("ssss",$name,$email,$subject,$message);
-  if($stmt->execute()){
-    $success = "Thanks — your message has been sent!";
+  
+  if($stmt === false) { // Check if the prepare step failed (e.g., table missing)
+      $error = "Prepare failed: " . $conn->error;
+  } elseif($stmt->execute()){
+      $success = "Thanks — your message has been sent!";
   } else {
-    $success = "Sorry, could not send your message.";
+      // THIS IS THE CRITICAL DEBUGGING LINE
+      $error = "Error saving message: " . $stmt->error;
   }
-  $stmt->close();
+  
+  if($stmt !== false) {
+    $stmt->close();
+  }
 }
 ?>
 <div class="container" style="padding:40px 0">
   <h2>Contact Us</h2>
   <?php if($success): ?><div class="notice success"><?=$success?></div><?php endif; ?>
+  <?php if($error): ?><div class="notice error"><?=$error?></div><?php endif; ?> 
   <div class="card" style="max-width:700px;">
     <form method="POST">
       <div class="form-row"><label>Name</label><input type="text" name="name" required></div>
@@ -32,3 +42,4 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
   </div>
 </div>
 <?php include 'includes/footer.php'; ?>
+
