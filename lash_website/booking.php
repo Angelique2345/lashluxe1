@@ -19,7 +19,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     if($stmt->execute()){
         $success = "Booking received! We'll contact you to confirm.";
     } else {
-        $error = "Error saving booking. Please try again.";
+        $error = "Error saving booking: " . $stmt->error;
     }
     $stmt->close();
 }
@@ -66,3 +66,4 @@ include 'includes/header.php';
   </div>
 </div>
 <?php include 'includes/footer.php'; ?>
+
